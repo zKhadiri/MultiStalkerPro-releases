@@ -154,6 +154,8 @@ install_plugin_deps() {
                         echo -e "${RED}Error: Failed to download $dep from custom link. Exiting...${RESET}"
                         exit 1
                     fi
+                elif [[ "$dep" == "zoneinfo" ]]; then
+                    echo -e "${YELLOW}Warning: $dep is not available. Skipping...${RESET}"
                 else
                     echo -e "${RED}Error: $dep is not available or failed to install. Exiting...${RESET}"
                     exit 1
@@ -173,7 +175,7 @@ restart_box(){
 install_plugin() {
     welcome_message
     detect_cpu_arch
-    
+
     echo "Checking if Multi-StalkerPro is installed..."
 
     INSTALLED_VERSION=$(opkg status enigma2-plugin-extensions-multi-stalkerpro | grep -i 'Version:' | awk '{print $2}' | sed 's/+.*//')
@@ -188,7 +190,11 @@ install_plugin() {
             # opkg remove enigma2-plugin-extensions-multi-stalkerpro
             # IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
             # wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
-            # opkg install "/tmp/${IPK}"
+            # if ! opkg install "/tmp/${IPK}"; then
+            #     echo -e "${RED}Error: failed to install the plugin. Exiting...${RESET}"
+            #     rm -f "/tmp/${IPK}"
+            #     restart_box
+            # fi
             # rm -f "/tmp/${IPK}"
             # restart_box
         else
@@ -199,7 +205,11 @@ install_plugin() {
         echo "Multi-StalkerPro is not installed. Installing..."
         # IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
         # wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
-        # opkg install "/tmp/${IPK}"
+        # if ! opkg install "/tmp/${IPK}"; then
+        #     echo -e "${RED}Error: failed to install the plugin. Exiting...${RESET}"
+        #     rm -f "/tmp/${IPK}"
+        #     exit 1
+        # fi
         # rm -f "/tmp/${IPK}"
         # restart_box
     fi
