@@ -16,7 +16,7 @@ IPK=""
 ARCH=""
 PY_VER=""
 VERSION=1.3
-BASE_URL="https://raw.githubusercontent.com/zKhadiri/MultiStalkerPro-releases/refs/heads/main/"
+BASE_URL="https://raw.githubusercontent.com/zKhadiri/MultiStalkerPro-releases/refs/heads/main"
 
 REQUIRED_PYTHON_DEPS=(
     "rapidfuzz"
@@ -167,6 +167,23 @@ install_plugin_deps() {
     done
 }
 
+install_ipaudio() {
+    if ! opkg list-installed | grep -q "enigma2-plugin-extensions-ipaudiopro"; then
+        if [[ "$CONSOLE" != "multistalkerpro" ]]; then
+            read -p "Do you want to install IPAudioPro? (yes/no): " choice
+            case "$choice" in 
+                [Yy][Ee][Ss]|[Yy]) 
+                    echo "Installing IPAudioPro..."
+                    wget -q "--no-check-certificate" https://raw.githubusercontent.com/zKhadiri/IPAudioPro-Releases-/refs/heads/main/installer.sh -O - | /bin/sh
+                    ;;
+                *) 
+                    echo "IPAudioPro Installation skipped."
+                    ;;
+            esac
+        fi
+    fi
+}
+
 restart_box(){
     killall -9 enigma2
     exit 0
@@ -175,7 +192,7 @@ restart_box(){
 install_plugin() {
     welcome_message
     detect_cpu_arch
-
+    
     echo "Checking if Multi-StalkerPro is installed..."
 
     INSTALLED_VERSION=$(opkg status enigma2-plugin-extensions-multi-stalkerpro | grep -i 'Version:' | awk '{print $2}' | sed 's/+.*//')
@@ -184,34 +201,30 @@ install_plugin() {
     if [[ -n "$INSTALLED_VERSION" ]]; then
         echo "Current installed version: $INSTALLED_VERSION"
 
-        if [[ "$(echo -e "$INSTALLED_VERSION\n$VERSION" | sort -V | tail -n1)" == "$VERSION" ]]; then
+        if [[ "$INSTALLED_VERSION" != "$VERSION" && "$(echo -e "$INSTALLED_VERSION\n$VERSION" | sort -V | tail -n1)" == "$VERSION" ]]; then
             install_plugin_deps
             echo "Newer version found. Installing version $VERSION..."
-            # opkg remove enigma2-plugin-extensions-multi-stalkerpro
-            # IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
-            # wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
-            # if ! opkg install "/tmp/${IPK}"; then
-            #     echo -e "${RED}Error: failed to install the plugin. Exiting...${RESET}"
-            #     rm -f "/tmp/${IPK}"
-            #     restart_box
-            # fi
-            # rm -f "/tmp/${IPK}"
-            # restart_box
+            opkg remove enigma2-plugin-extensions-multi-stalkerpro
+            IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
+            wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
+            opkg install "/tmp/${IPK}"
+            rm -f "/tmp/${IPK}"
+            
+            install_ipaudio
+            restart_box
         else
+            echo "${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
             echo "Multi-StalkerPro is already up to date (version $INSTALLED_VERSION). No action needed."
         fi
     else
         install_plugin_deps
         echo "Multi-StalkerPro is not installed. Installing..."
-        # IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
-        # wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
-        # if ! opkg install "/tmp/${IPK}"; then
-        #     echo -e "${RED}Error: failed to install the plugin. Exiting...${RESET}"
-        #     rm -f "/tmp/${IPK}"
-        #     exit 1
-        # fi
-        # rm -f "/tmp/${IPK}"
-        # restart_box
+        IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
+        wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
+        opkg install "/tmp/${IPK}"
+        rm -f "/tmp/${IPK}"
+        install_ipaudio
+        restart_box
     fi
     exit 0
 }
