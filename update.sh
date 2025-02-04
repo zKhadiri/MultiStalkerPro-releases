@@ -167,10 +167,15 @@ install_plugin_deps() {
     done
 }
 
-install_ipaudio() {
+install_ipaudiopro() {
+    echo "Checking IPAudioPro installation..."
     if ! opkg list-installed | grep -q "enigma2-plugin-extensions-ipaudiopro"; then
-        if [[ "$CONSOLE" != "multistalkerpro" ]]; then
-            read -p "Do you want to install IPAudioPro? (yes/no): " choice
+        echo "IPAudioPro is not installed."
+
+        if [[ -t 0 && "$CONSOLE" != "multistalkerpro" ]]; then
+            read -t 10 -p "Do you want to install IPAudioPro? (yes/no) [default: yes]: " choice
+            choice=${choice:-yes}
+
             case "$choice" in 
                 [Yy][Ee][Ss]|[Yy]) 
                     echo "Installing IPAudioPro..."
@@ -180,6 +185,8 @@ install_ipaudio() {
                     echo "IPAudioPro Installation skipped."
                     ;;
             esac
+        else
+            echo "Skipping IPAudioPro installation due to non-interactive shell or CONSOLE=$CONSOLE."
         fi
     fi
 }
@@ -210,7 +217,7 @@ install_plugin() {
             opkg install "/tmp/${IPK}"
             rm -f "/tmp/${IPK}"
             
-            install_ipaudio
+            install_ipaudiopro
             restart_box
         else
             echo "${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
@@ -223,7 +230,7 @@ install_plugin() {
         wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
         opkg install "/tmp/${IPK}"
         rm -f "/tmp/${IPK}"
-        install_ipaudio
+        install_ipaudiopro
         restart_box
     fi
     exit 0
