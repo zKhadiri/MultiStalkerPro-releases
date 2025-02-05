@@ -133,11 +133,11 @@ install_plugin_deps() {
 
                     case "$dep" in
                         rarfile)
-                            package_url="${BASE_URL}DEPS/Python/python${PY_VER}/python3-rarfile_4.2-r0_all.ipk"
+                            package_url="${BASE_URL}/DEPS/Python/python${PY_VER}/python3-rarfile_4.2-r0_all.ipk"
                             ipk="python3-rarfile_4.2-r0_all.ipk"
                             ;;
                         rapidfuzz)
-                            package_url="${BASE_URL}DEPS/Python/python${PY_VER}/${CPU_ARCH}/python3-rapidfuzz_3.11.0_${ARCH}.ipk"
+                            package_url="${BASE_URL}/DEPS/Python/python${PY_VER}/${CPU_ARCH}/python3-rapidfuzz_3.11.0_${ARCH}.ipk"
                             ipk="python3-rapidfuzz_3.11.0_${ARCH}.ipk"
                             ;;
                     esac
