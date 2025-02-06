@@ -211,11 +211,21 @@ install_plugin() {
         if [[ "$INSTALLED_VERSION" != "$VERSION" && "$(echo -e "$INSTALLED_VERSION\n$VERSION" | sort -V | tail -n1)" == "$VERSION" ]]; then
             install_plugin_deps
             echo "Newer version found. Installing version $VERSION..."
+
+            if [ -e /etc/enigma2/MultiStalkerPro.json ]; then
+                cp /etc/enigma2/MultiStalkerPro.json /tmp
+            fi
+            
             opkg remove enigma2-plugin-extensions-multi-stalkerpro
             IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
             wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
             opkg install "/tmp/${IPK}"
             rm -f "/tmp/${IPK}"
+
+            if [ -e /tmp/MultiStalkerPro.json ]; then
+                mv -f /tmp/MultiStalkerPro.json /etc/enigma2/MultiStalkerPro.json
+                rm -f /tmp/MultiStalkerPro.json
+            fi
             
             install_ipaudiopro
             restart_box
