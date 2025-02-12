@@ -15,7 +15,7 @@ RESET='\033[0m'
 IPK=""
 ARCH=""
 PY_VER=""
-VERSION=1.3
+VERSION="1.3-r01"
 BASE_URL="https://raw.githubusercontent.com/zKhadiri/MultiStalkerPro-releases/refs/heads/main"
 
 REQUIRED_PYTHON_DEPS=(
@@ -173,7 +173,7 @@ install_ipaudiopro() {
         echo "IPAudioPro is not installed."
 
         if [[ -t 0 && "$CONSOLE" != "multistalkerpro" ]]; then
-            read -t 10 -p "Do you want to install IPAudioPro? (yes/no) [default: yes]: " choice
+            read -t 60 -p "Do you want to install IPAudioPro? (yes/no) [default: yes]: " choice
             choice=${choice:-yes}
 
             case "$choice" in 
@@ -188,12 +188,37 @@ install_ipaudiopro() {
         else
             echo "Skipping IPAudioPro installation due to non-interactive shell or CONSOLE=$CONSOLE."
         fi
+    else
+        echo "IPAudioPro is already installed."
     fi
 }
 
 restart_box(){
     killall -9 enigma2
     exit 0
+}
+
+parse_version() {
+    local version=$1
+    if [[ $version =~ ([0-9]+\.[0-9]+(\.[0-9]+)?)(-r([0-9]+))? ]]; then
+        echo "${BASH_REMATCH[1]} ${BASH_REMATCH[4]:-0}"
+    else
+        echo "$version 0"
+    fi
+}
+
+needs_update() {
+    local current_version=$1
+    local source_version=$2
+
+    read -r current_main current_rev <<< "$(parse_version "$current_version")"
+    read -r source_main source_rev <<< "$(parse_version "$source_version")"
+
+    if [[ "$current_main" != "$source_main" || "$current_rev" != "$source_rev" ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 install_plugin() {
@@ -208,7 +233,7 @@ install_plugin() {
     if [[ -n "$INSTALLED_VERSION" ]]; then
         echo "Current installed version: $INSTALLED_VERSION"
 
-        if [[ "$INSTALLED_VERSION" != "$VERSION" && "$(echo -e "$INSTALLED_VERSION\n$VERSION" | sort -V | tail -n1)" == "$VERSION" ]]; then
+        if needs_update "$INSTALLED_VERSION" "$VERSION"; then
             install_plugin_deps
             echo "Newer version found. Installing version $VERSION..."
 
@@ -230,7 +255,6 @@ install_plugin() {
             install_ipaudiopro
             restart_box
         else
-            echo "${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
             echo "Multi-StalkerPro is already up to date (version $INSTALLED_VERSION). No action needed."
         fi
     else
