@@ -15,7 +15,7 @@ RESET='\033[0m'
 IPK=""
 ARCH=""
 PY_VER=""
-VERSION="1.3-r01"
+VERSION="1.3-r02"
 BASE_URL="https://raw.githubusercontent.com/zKhadiri/MultiStalkerPro-releases/refs/heads/main"
 
 REQUIRED_PYTHON_DEPS=(
@@ -76,7 +76,7 @@ detect_cpu_arch() {
         CPU_ARCH="arm"
         ARCH=$(detect_arm_arch)
         if [[ "$ARM_ARCH" != "unknown" ]]; then
-            IPK="enigma2-plugin-extensions-multi-stalkerpro_${VERSION}_${ARCH}_py${PY_VER}.ipk"
+            IPK="enigma2-plugin-subscription-multi-stalkerpro_${VERSION}_${ARCH}_py${PY_VER}.ipk"
             echo "Detected architecture: ${ARCH}"
         else
             echo "Unsupported architecture: ${ARCH}"
@@ -85,12 +85,12 @@ detect_cpu_arch() {
     elif [[ "$CPU_ARCH" == *"mips"* ]]; then
         ARCH="mips32el"
         CPU_ARCH="mipsel"
-        IPK="enigma2-plugin-extensions-multi-stalkerpro_${VERSION}_${ARCH}_py${PY_VER}.ipk"
+        IPK="enigma2-plugin-subscription-multi-stalkerpro_${VERSION}_${ARCH}_py${PY_VER}.ipk"
         echo "Detected architecture: ${CPU_ARCH}"
     elif [[ "$CPU_ARCH" == *"aarch64"* ]]; then
         ARCH="aarch64"
         CPU_ARCH="aarch64"
-        IPK="enigma2-plugin-extensions-multi-stalkerpro_${VERSION}_${ARCH}_py${PY_VER}.ipk"
+        IPK="enigma2-plugin-subscription-multi-stalkerpro_${VERSION}_${ARCH}_py${PY_VER}.ipk"
         echo "Detected architecture: ${CPU_ARCH}"
     else
         echo "Unsupported CPU architecture: $CPU_ARCH"
@@ -227,7 +227,14 @@ install_plugin() {
     
     echo "Checking if Multi-StalkerPro is installed..."
 
-    INSTALLED_VERSION=$(opkg status enigma2-plugin-extensions-multi-stalkerpro | grep -i 'Version:' | awk '{print $2}' | sed 's/+.*//')
+    OLD_PACKAGE="enigma2-plugin-extensions-multi-stalkerpro"
+    NEW_PACKAGE="enigma2-plugin-subscription-multi-stalkerpro"
+
+    INSTALLED_VERSION=$(opkg status $OLD_PACKAGE | grep -i 'Version:' | awk '{print $2}' | sed 's/+.*//')
+    if [[ -z "$INSTALLED_VERSION" ]]; then
+        INSTALLED_VERSION=$(opkg status $NEW_PACKAGE | grep -i 'Version:' | awk '{print $2}' | sed 's/+.*//')
+    fi
+
     echo "Current version: $VERSION"
     
     if [[ -n "$INSTALLED_VERSION" ]]; then
@@ -241,7 +248,14 @@ install_plugin() {
                 cp /etc/enigma2/MultiStalkerPro.json /tmp
             fi
             
-            opkg remove enigma2-plugin-extensions-multi-stalkerpro
+            if opkg list-installed | grep -q "$OLD_PACKAGE"; then
+                opkg remove $OLD_PACKAGE
+            fi
+
+            if opkg list-installed | grep -q "$NEW_PACKAGE"; then
+                opkg remove $NEW_PACKAGE
+            fi
+
             IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
             wget -q "--no-check-certificate" -O "/tmp/${IPK}" "$IPK_URL"
             opkg install "/tmp/${IPK}"
