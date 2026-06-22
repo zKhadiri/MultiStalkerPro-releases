@@ -15,7 +15,7 @@ RESET='\033[0m'
 IPK=""
 ARCH=""
 PY_VER=""
-VERSION="1.3-r03"
+VERSION="1.3-r04"
 BASE_URL="https://raw.githubusercontent.com/zKhadiri/MultiStalkerPro-releases/refs/heads/main"
 
 REQUIRED_PYTHON_DEPS=(
