@@ -1,5 +1,5 @@
 {
-    "plugin_version": "1.3-r04",
+    "plugin_version": "1.3-r05",
     "plugin_changelog": "Improve search functionality for MAG Portals.",
     "plugin_api_version": "1.4",
     "plugin_api_changelog": "Resolve an issue where certain TMDB media assets failed to fetch or render correctly",

@@ -15,7 +15,7 @@ RESET='\033[0m'
 IPK=""
 ARCH=""
 PY_VER=""
-VERSION="1.3-r04"
+VERSION="1.3-r05"
 BASE_URL="https://raw.githubusercontent.com/zKhadiri/MultiStalkerPro-releases/refs/heads/main"
 
 REQUIRED_PYTHON_DEPS=(
@@ -254,6 +254,9 @@ install_plugin() {
 
             if opkg list-installed | grep -q "$NEW_PACKAGE"; then
                 opkg remove $NEW_PACKAGE
+                if [ -e usr/lib/enigma2/python/Plugins/Extensions/MultiStalkerPro ]; then
+                    rm -rf usr/lib/enigma2/python/Plugins/Extensions/MultiStalkerPro
+                fi
             fi
 
             IPK_URL="${BASE_URL}/v${VERSION}/python${PY_VER}/${CPU_ARCH}/${IPK}"
